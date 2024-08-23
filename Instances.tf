@@ -1,5 +1,5 @@
 resource "aws_instance" "Jenkins-ec2-1"{
-  ami           = "ami-0f007bf1d5c770c6e"
+  ami           = "ami-0c0493bbac867d427"
   instance_type = "t2.micro"
   vpc_security_group_ids  = [aws_security_group.Jenkins-sg.id]
   subnet_id = aws_subnet.Jenkins-pub-sub-1.id
@@ -19,11 +19,11 @@ EOF
 }
 
 resource "aws_instance" "Jenkins-ec2-2"{
-  ami           = "ami-0f007bf1d5c770c6e"
+  ami           = "ami-0c0493bbac867d427"
   instance_type = "t2.micro"
-  vpc_security_group_ids  = [data.aws_security_group.my_sg.id]
+  vpc_security_group_ids  = [aws_security_group.Jenkins-sg.id]
   subnet_id = aws_subnet.Jenkins-pub-sub-2.id
-  key_name = "Godwin-KP"
+  key_name = "Gob"
   associate_public_ip_address = true
   user_data = <<EOF
 #!/bin/bash
