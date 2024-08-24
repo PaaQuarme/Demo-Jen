@@ -7,9 +7,8 @@ resource "aws_launch_template" "Jenkins-lt" {
 
   network_interfaces {
     associate_public_ip_address = true
-    security_groups             = [aws_security_group.Jenkins-sg.id]
-    subnet_id                   = aws_subnet.Jenkins-pub-sub-1.id
-  }
+    security_groups             = [aws_security_group.Jenkins-sg.id]    
+}
 
   user_data = <<EOF
 #!/bin/bash
@@ -20,6 +19,7 @@ systemctl enable httpd
 echo "<h1> This is my load balancer $(hostname -f) in AZ $EC2_AVAIL_ZONE </h1>" > /var/www/html/index.html
 EOF
 
+  
   tags = {
     name = "Jenkins-lt"
   }
@@ -36,6 +36,9 @@ resource "aws_autoscaling_group" "Jenkins-asg" {
     id      = aws_launch_template.Jenkins-lt.id
     version = "$Latest"
   }
+
+  health_check_type         = "ELB"
+  health_check_grace_period = 300
 
   tag {
     key                 = "Name"
