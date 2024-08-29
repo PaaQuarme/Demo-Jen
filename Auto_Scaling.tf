@@ -1,17 +1,13 @@
-# Define a launch template
-resource "aws_launch_template" "Jenkins-lt" {
-  name_prefix   = "Jenkins-lt"
-  image_id      = "ami-0c0493bbac867d427"
-  instance_type = "t2.micro"
+# Launch Configuration
+resource "aws_launch_configuration" "Jenkins-lt" {
+    name          = "Jenkins-lc"
+    image_id      = "ami-0c0493bbac867d427" # Replace with your AMI ID
+    instance_type = "t2.micro"
+    security_groups = [
+        aws_security_group.Jenkins-sg.id,
+    ]
 
-  key_name = "Gob"
-
-  network_interfaces {
-    associate_public_ip_address = true
-    security_groups             = [aws_security_group.Jenkins-sg.id]
-  }
-
-  user_data = <<EOF
+ user_data = <<EOF
 #!/bin/bash
 yum update -y
 yum install -y httpd
@@ -25,19 +21,19 @@ EOF
   }
 }
 
-# Define an Auto Scaling Group
+# Auto Scaling Group
 resource "aws_autoscaling_group" "Jenkins-asg" {
-  desired_capacity     = 2
-  max_size             = 3
-  min_size             = 1
-  name                 = "Jenkins-asg"
-  target_group_arns    = [aws_lb_target_group.Jenkins-tg.arn]
-  vpc_zone_identifier  = [aws_subnet.Jenkins-pub-sub-1.id, aws_subnet.Jenkins-pub-sub-2.id]
-  
-  launch_template {
-    id      = aws_launch_template.Jenkins-lt.id
-    version = "$Latest"
-  }
+    desired_capacity     = 2
+    max_size             = 4
+    min_size             = 1
+    vpc_zone_identifier  = [aws_subnet.Jenkins-pub-sub-1.id, aws_subnet.Jenkins-pub-sub-2.id]
+    launch_configuration = aws_launch_configuration.Jenkins-lt.id
 
-  health_check_type         = "EC2" 
+    tag {
+        key                 = "Name"
+        value               = "Jenkins-ASG"
+        propagate_at_launch = true
+    }
+
+    target_group_arns = [aws_lb_target_group.Jenkins-tg.arn]
 }
